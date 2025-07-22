@@ -1,0 +1,7 @@
+.container {
+  padding: 30rpx;
+}
+.preview {
+  width: 70vw;
+  margin: 20rpx 0;
+} 

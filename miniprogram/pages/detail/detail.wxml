@@ -1,0 +1,15 @@
+<view class="container">
+  <view>车牌号：{{record.plate_number}}</view>
+  <view>车型：{{record.vehicle_type}}</view>
+  <view>进门时间：{{record.in_time}}</view>
+  <image src="{{record.in_photo_url}}" mode="widthFix" class="preview" />
+  <view>出门时间：{{record.out_time}}</view>
+  <image src="{{record.out_photo_url}}" mode="widthFix" class="preview" />
+  <view>物资清单：</view>
+  <view wx:for="{{record.cargo_list}}" wx:key="name">
+    {{item.name}} × {{item.count}}
+  </view>
+  <view>状态：{{record.status}}</view>
+  <view>操作员：{{record.operator}}</view>
+  <view>备注：{{record.remark}}</view>
+</view> 

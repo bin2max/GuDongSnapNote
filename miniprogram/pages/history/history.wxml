@@ -1,0 +1,42 @@
+<view class="container">
+  <view class="header">
+    <text class="title">历史记录</text>
+  </view>
+  
+  <view class="records-list">
+    <view wx:for="{{records}}" wx:key="_id" class="record-item" bindtap="onDetail" data-id="{{item._id}}">
+      <view class="record-header">
+        <view class="plate-number">{{item.plate_number}}</view>
+        <view class="status-badge {{item.status}}">{{getStatusText(item.status)}}</view>
+      </view>
+      
+      <view class="record-info">
+        <view class="info-row">
+          <text class="label">车型：</text>
+          <text class="value">{{item.vehicle_type}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">驾驶人：</text>
+          <text class="value">{{item.driver_name}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">进场时间：</text>
+          <text class="value">{{formatTime(item.in_time)}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.out_time}}">
+          <text class="label">出场时间：</text>
+          <text class="value">{{formatTime(item.out_time)}}</text>
+        </view>
+      </view>
+      
+      <view class="cargo-summary">
+        <text class="cargo-title">物资：</text>
+        <text class="cargo-text">{{getCargoSummary(item.cargo_list)}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <view wx:if="{{records.length === 0}}" class="empty-state">
+    <text class="empty-text">暂无历史记录</text>
+  </view>
+</view> 

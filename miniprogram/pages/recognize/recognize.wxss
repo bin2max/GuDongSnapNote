@@ -1,0 +1,217 @@
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 上半部分：识别结果表单 */
+.form-section {
+  background: white;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.form-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30rpx;
+  text-align: center;
+}
+
+.form-item {
+  margin-bottom: 25rpx;
+}
+
+.label {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.input {
+  width: 100%;
+  height: 70rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  background: #fafafa;
+}
+
+.cargo-list {
+  border: 2rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  background: #fafafa;
+}
+
+.cargo-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15rpx;
+  gap: 10rpx;
+}
+
+.cargo-name {
+  flex: 2;
+  height: 60rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  padding: 0 15rpx;
+  font-size: 26rpx;
+  background: white;
+}
+
+.cargo-count {
+  flex: 1;
+  height: 60rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  padding: 0 15rpx;
+  font-size: 26rpx;
+  background: white;
+  text-align: center;
+}
+
+.btn-remove {
+  width: 60rpx;
+  height: 60rpx;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.btn-add {
+  width: 100%;
+  height: 60rpx;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
+/* 中间部分：识别结果图 */
+.image-section {
+  background: white;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.image-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25rpx;
+  text-align: center;
+}
+
+.image-group {
+  margin-bottom: 30rpx;
+}
+
+.image-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+  font-weight: bold;
+}
+
+.result-image {
+  width: 100%;
+  max-height: 300rpx;
+  border-radius: 15rpx;
+  box-shadow: 0 4rpx 15rpx rgba(0,0,0,0.1);
+}
+
+.detection-results {
+  border-top: 2rpx solid #f0f0f0;
+  padding-top: 25rpx;
+}
+
+.results-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.results-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15rpx;
+  justify-content: center;
+}
+
+.detection-item {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+  padding: 12rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  min-width: 120rpx;
+  justify-content: center;
+}
+
+.detection-label {
+  font-weight: bold;
+}
+
+.detection-count {
+  background: rgba(255,255,255,0.2);
+  padding: 2rpx 8rpx;
+  border-radius: 10rpx;
+  font-size: 22rpx;
+}
+
+.detection-confidence {
+  background: rgba(255,255,255,0.3);
+  padding: 2rpx 6rpx;
+  border-radius: 8rpx;
+  font-size: 20rpx;
+  color: #fff;
+}
+
+/* 底部：确认按钮 */
+.button-section {
+  padding: 30rpx;
+  background: white;
+  box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.btn-confirm-in, .btn-confirm-out {
+  width: 100%;
+  height: 90rpx;
+  border-radius: 15rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 15rpx rgba(0,0,0,0.2);
+}
+
+.btn-confirm-in {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.btn-confirm-out {
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+
+.btn-text {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: white;
+} 

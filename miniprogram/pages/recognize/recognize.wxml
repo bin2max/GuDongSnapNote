@@ -1,0 +1,66 @@
+<view class="container">
+  <!-- 标题 -->
+  <view class="form-title">识别结果</view>
+
+  <!-- 车牌号、车型、物资清单可编辑区 -->
+  <view class="form-section">
+    <view class="form-item">
+      <text class="label">车牌号</text>
+      <input class="input" value="{{plateNumber}}" bindinput="onPlateNumberChange" placeholder="请输入车牌号" />
+    </view>
+    <view class="form-item">
+      <text class="label">车型</text>
+      <input class="input" value="{{vehicleType}}" bindinput="onVehicleTypeChange" placeholder="请输入车型" />
+    </view>
+    <view class="form-item">
+      <text class="label">物资清单</text>
+      <view wx:for="{{cargoList}}" wx:key="index" class="cargo-row">
+        <input class="cargo-name" value="{{item.name}}" bindinput="onCargoNameChange" data-index="{{index}}" placeholder="物资名称" />
+        <input class="cargo-count" value="{{item.count}}" bindinput="onCargoCountChange" data-index="{{index}}" placeholder="数量" type="number" />
+        <button class="btn-remove" bindtap="removeCargo" data-index="{{index}}">删除</button>
+      </view>
+      <button class="btn-add" bindtap="addCargo">+ 添加物资</button>
+    </view>
+  </view>
+
+  <!-- 语音识别区 -->
+  <view class="voice-section">
+    <textarea class="voice-textarea" value="{{voiceText}}" placeholder="请点击语音识别按钮或手动输入..." auto-height bindinput="onVoiceTextInput" />
+    <view class="voice-btns">
+      <button class="btn-voice" bindtap="onVoiceRecognize">语音识别</button>
+      <button class="btn-update" bindtap="onVoiceUpdate">更新</button>
+    </view>
+  </view>
+
+  <!-- 图片分区展示 -->
+  <view class="image-section">
+    <view class="image-group">
+      <view class="image-label">车辆正面</view>
+      <image src="{{vehicleImageUrl}}" mode="aspectFit" class="result-image" />
+    </view>
+    <view class="image-group">
+      <view class="image-label">装载区域</view>
+      <image src="{{cargoImageUrl}}" mode="aspectFit" class="result-image" />
+    </view>
+    <view class="detection-results">
+      <view class="results-title">识别到的物资：</view>
+      <view class="results-grid">
+        <view wx:for="{{detectionResults}}" wx:key="index" class="detection-item">
+          <text class="detection-label">{{item.name}}</text>
+          <text class="detection-count">×{{item.count}}</text>
+          <text class="detection-confidence" wx:if="{{item.confidence}}">{{item.confidence ? (item.confidence * 100) : ''}}%</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部：确认按钮 -->
+  <view class="button-section">
+    <button wx:if="{{mode==='in'}}" class="btn-confirm-in" bindtap="onRegister">
+      <text class="btn-text">确认进场</text>
+    </button>
+    <button wx:if="{{mode==='out'}}" class="btn-confirm-out" bindtap="onNext">
+      <text class="btn-text">确认出场</text>
+    </button>
+  </view>
+</view> 

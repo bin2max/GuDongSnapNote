@@ -1,0 +1,49 @@
+<view class="container">
+  <view class="header">
+    <text class="title">物资比对结果</text>
+    <text class="subtitle">车牌号：{{plateNumber}}</text>
+  </view>
+  
+  <view class="comparison-section">
+    <!-- 进场物资 -->
+    <view class="cargo-section">
+      <view class="section-title">进场物资</view>
+      <view class="cargo-list">
+        <view wx:for="{{inCargoList}}" wx:key="name" class="cargo-item in">
+          <text class="cargo-name">{{item.name}}</text>
+          <text class="cargo-count">×{{item.count}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 出场物资 -->
+    <view class="cargo-section">
+      <view class="section-title">出场物资</view>
+      <view class="cargo-list">
+        <view wx:for="{{outCargoList}}" wx:key="name" class="cargo-item out">
+          <text class="cargo-name">{{item.name}}</text>
+          <text class="cargo-count">×{{item.count}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 比对结果 -->
+  <view class="result-section">
+    <view class="result-card {{result}}">
+      <view class="result-icon">{{result === 'allowed' ? '✅' : '❌'}}</view>
+      <view class="result-text">{{resultText}}</view>
+      <view class="result-detail">{{resultDetail}}</view>
+    </view>
+  </view>
+  
+  <!-- 操作按钮 -->
+  <view class="button-section">
+    <button class="btn-primary" bindtap="onConfirm">
+      <text class="btn-text">确认操作</text>
+    </button>
+    <button class="btn-secondary" bindtap="onBack">
+      <text class="btn-text">返回首页</text>
+    </button>
+  </view>
+</view> 

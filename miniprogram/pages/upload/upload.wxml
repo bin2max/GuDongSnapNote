@@ -1,0 +1,90 @@
+<view class="container">
+  <view class="header">
+    <text class="title">{{mode === 'in' ? '进场登记' : '出场登记'}}</text>
+    <text class="subtitle">请按步骤拍摄车辆照片</text>
+  </view>
+  
+  <!-- 上半部分：车辆正面拍照 -->
+  <view class="section vehicle-section">
+    <view class="section-title">
+      <text class="title-text">第一步：拍摄车辆正面</text>
+      <text class="title-desc">用于识别车牌号和车型</text>
+    </view>
+    
+    <view class="image-area">
+      <view wx:if="{{!vehicleImageUrl}}" class="upload-area">
+        <view class="upload-icon">🚗</view>
+        <text class="upload-text">点击下方按钮拍摄车辆正面</text>
+      </view>
+      <image wx:if="{{vehicleImageUrl}}" src="{{vehicleImageUrl}}" mode="aspectFit" class="preview-image" />
+    </view>
+    
+    <view class="button-group">
+      <button class="btn-camera" bindtap="takeVehiclePhoto">
+        <text class="btn-text">📷 拍照</text>
+      </button>
+      <button class="btn-album" bindtap="chooseVehicleImage">
+        <text class="btn-text">🖼️ 选择图片</text>
+      </button>
+    </view>
+    
+    <!-- 车辆识别结果 -->
+    <view wx:if="{{vehicleRecognitionResult}}" class="recognition-result">
+      <view class="result-item">
+        <text class="result-label">车牌号：</text>
+        <text class="result-value">{{vehicleRecognitionResult.plateNumber || '未识别'}}</text>
+      </view>
+      <view class="result-item">
+        <text class="result-label">车型：</text>
+        <text class="result-value">{{vehicleRecognitionResult.vehicleType || '未识别'}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 下半部分：装载区域拍照 -->
+  <view class="section cargo-section">
+    <view class="section-title">
+      <text class="title-text">第二步：拍摄装载区域</text>
+      <text class="title-desc">用于识别装载物资</text>
+    </view>
+    
+    <view class="image-area">
+      <view wx:if="{{!cargoImageUrl}}" class="upload-area">
+        <view class="upload-icon">📦</view>
+        <text class="upload-text">点击下方按钮拍摄装载区域</text>
+      </view>
+      <image wx:if="{{cargoImageUrl}}" src="{{cargoImageUrl}}" mode="aspectFit" class="preview-image" />
+    </view>
+    
+    <view class="button-group">
+      <button class="btn-camera" bindtap="takeCargoPhoto">
+        <text class="btn-text">📷 拍照</text>
+      </button>
+      <button class="btn-album" bindtap="chooseCargoImage">
+        <text class="btn-text">🖼️ 选择图片</text>
+      </button>
+    </view>
+    
+    <!-- 物资识别结果 -->
+    <view wx:if="{{cargoRecognitionResult}}" class="recognition-result">
+      <view class="result-title">识别到的物资：</view>
+      <view class="cargo-list">
+        <view wx:for="{{cargoRecognitionResult}}" wx:key="name" class="cargo-item">
+          <text class="cargo-name">{{item.name}}</text>
+          <text class="cargo-count">×{{item.count}}</text>
+          <text class="cargo-confidence" wx:if="{{item.confidence}}">{{item.confidence ? (item.confidence * 100) : ''}}%</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 下一步按钮 -->
+  <view class="bottom-section">
+    <button wx:if="{{vehicleImageUrl && cargoImageUrl}}" class="btn-next" bindtap="onNext">
+      <text class="btn-text">下一步</text>
+    </button>
+    <button wx:else class="btn-next disabled" disabled>
+      <text class="btn-text">请完成拍照</text>
+    </button>
+  </view>
+</view> 

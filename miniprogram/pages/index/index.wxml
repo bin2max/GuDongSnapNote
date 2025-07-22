@@ -1,0 +1,18 @@
+<view class="container">
+  <view class="header">
+    <text class="title">车辆进出管理系统</text>
+  </view>
+  
+  <view class="main-buttons">
+    <button class="btn-primary" bindtap="onInRegister">
+      <text class="btn-text">进场登记</text>
+    </button>
+    <button class="btn-secondary" bindtap="onOutRegister">
+      <text class="btn-text">出场登记</text>
+    </button>
+  </view>
+  
+  <view class="secondary-buttons">
+    <button class="btn-history" bindtap="onHistory">历史记录</button>
+  </view>
+</view> 
