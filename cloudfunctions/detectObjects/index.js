@@ -2,85 +2,50 @@
 const cloud = require('wx-server-sdk')
 const tencentcloud = require('tencentcloud-sdk-nodejs')
 
-cloud.init({
-  env: cloud.DYNAMIC_CURRENT_ENV
-})
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
-// 初始化腾讯云客户端
-const TiaClient = tencentcloud.tia.v20190226.Client
-const clientConfig = {
-  credential: {
-    secretId: process.env.TENCENT_SECRET_ID,
-    secretKey: process.env.TENCENT_SECRET_KEY,
-  },
-  region: 'ap-beijing',
-  profile: {
-    httpProfile: {
-      endpoint: 'tiia.tencentcloudapi.com',
-    },
-  },
-}
-
-const client = new TiaClient(clientConfig)
+const TiaClient = tencentcloud.tia.v20190529.Client
 
 exports.main = async (event, context) => {
+  const secretId = process.env.TENCENT_SECRET_ID
+  const secretKey = process.env.TENCENT_SECRET_KEY
+  if (!secretId || !secretKey) {
+    return { success: false, error: '环境变量 TENCENT_SECRET_ID 或 TENCENT_SECRET_KEY 未配置' }
+  }
+  const clientConfig = {
+    credential: { secretId, secretKey },
+    region: 'ap-beijing',
+    profile: { httpProfile: { endpoint: 'tiia.tencentcloudapi.com' } }
+  }
+  const client = new TiaClient(clientConfig)
+
   try {
-    const { imageBase64, maxDetectedNum = 50 } = event
-    
+    const { imageBase64 } = event
     if (!imageBase64) {
-      return {
-        success: false,
-        error: '缺少图片数据'
-      }
+      return { success: false, error: '缺少图片数据' }
     }
-    
-    // 调用腾讯云物体识别API
-    const params = {
-      ImageBase64: imageBase64,
-      MaxDetectedNum: maxDetectedNum
-    }
-    
-    const result = await client.DetectObject(params)
-    
-    // 处理识别结果
-    const objects = result.Objects || []
-    
-    // 统计同类物体数量
-    const objectCounts = {}
-    objects.forEach(obj => {
-      const name = obj.Name
-      if (objectCounts[name]) {
-        objectCounts[name]++
-      } else {
-        objectCounts[name] = 1
-      }
-    })
-    
-    // 转换为物资清单格式
-    const cargoList = Object.entries(objectCounts).map(([name, count]) => ({
-      name,
-      count,
-      confidence: objects.find(obj => obj.Name === name)?.Confidence || 0
+    const params = { ImageBase64: imageBase64 }
+    const result = await client.RecognizeCarPro(params)
+    // 解析车辆识别结果
+    const carTags = result.CarTags || []
+    const carPlates = carTags.map(tag => ({
+      plate: tag.PlateContent?.Plate || '',
+      type: tag.Type || '',
+      brand: tag.Brand || '',
+      color: tag.Color || '',
+      confidence: tag.Confidence || 0
     }))
-    
-    // 按置信度排序
-    cargoList.sort((a, b) => b.confidence - a.confidence)
-    
     return {
       success: true,
       data: {
-        Objects: objects,
-        CargoList: cargoList,
-        TotalCount: objects.length,
-        CargoTypes: cargoList.length
+        CarTags: carTags,
+        CarPlates: carPlates,
+        CarCoords: result.CarCoords || [],
+        RequestId: result.RequestId
       }
     }
-    
   } catch (error) {
-    console.error('物体识别失败:', error)
-    return {
-      success: false,
-      error: error.message || '识别失败'
-    }
+    console.error('车辆识别失败:', error)
+    return { success: false, error: error.message || '识别失败' }
   }
 } 

@@ -18,20 +18,25 @@ Page({
   },
   
   onLoad(query) {
-    const { mode, vehicleImageUrl, cargoImageUrl, plateNumber, vehicleType, cargoList } = query
-    
-    this.setData({ 
-      mode,
-      vehicleImageUrl: decodeURIComponent(vehicleImageUrl || ''),
-      cargoImageUrl: decodeURIComponent(cargoImageUrl || ''),
-      plateNumber: plateNumber || '',
-      vehicleType: vehicleType || '',
-      driverName: '张三', // 需要手动输入
-      phoneNumber: '13800138000', // 需要手动输入
-      cargoList: JSON.parse(decodeURIComponent(cargoList || '[]')),
-      detectionResults: JSON.parse(decodeURIComponent(cargoList || '[]')),
+    let cargoList = [];
+    try {
+      cargoList = JSON.parse(decodeURIComponent(query.cargoList || '[]'));
+      if (!Array.isArray(cargoList)) cargoList = [];
+    } catch (e) {
+      cargoList = [];
+    }
+    this.setData({
+      mode: query.mode || 'in',
+      vehicleImageUrl: decodeURIComponent(query.vehicleImageUrl || ''),
+      cargoImageUrl: decodeURIComponent(query.cargoImageUrl || ''),
+      plateNumber: query.plateNumber || '',
+      vehicleType: query.vehicleType || '',
+      driverName: '张三',
+      phoneNumber: '13800138000',
+      cargoList,
+      detectionResults: cargoList,
       voiceText: ''
-    })
+    });
   },
   
   // 表单输入事件
