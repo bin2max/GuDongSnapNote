@@ -1,5 +1,5 @@
 const cloud = require('wx-server-sdk')
-const tencentcloud = require('tencentcloud-sdk-nodejs')
+const tencentcloud = require('tencentcloud-sdk-nodejs-asr')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 

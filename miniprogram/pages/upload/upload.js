@@ -77,8 +77,27 @@ Page({
     this.setData({ isRecognizing: true })
     wx.showLoading({ title: '识别车辆中...' })
     try {
-      const imageBase64 = await this.imageToBase64(imagePath)
-      const vehicleResult = await this.recognition.recognizeVehicle(imageBase64)
+      // 优先上传到云存储，拿到imageUrl
+      const cloudPath = `vehicle_images/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`
+      let imageUrl = ''
+      try {
+        const uploadRes = await wx.cloud.uploadFile({
+          cloudPath,
+          filePath: imagePath
+        })
+        const tempUrlRes = await wx.cloud.getTempFileURL({ fileList: [uploadRes.fileID] })
+        imageUrl = tempUrlRes.fileList[0].tempFileURL
+      } catch (e) {
+        imageUrl = ''
+      }
+      let vehicleResult = null
+      if (imageUrl) {
+        vehicleResult = await this.recognition.recognizeVehicle({ imageUrl })
+      } else {
+        // 上传失败则降级为base64
+        const imageBase64 = await this.imageToBase64(imagePath)
+        vehicleResult = await this.recognition.recognizeVehicle({ imageBase64 })
+      }
       this.setData({
         vehicleRecognitionResult: vehicleResult,
         isRecognizing: false
@@ -98,8 +117,27 @@ Page({
     this.setData({ isRecognizing: true })
     wx.showLoading({ title: '识别物资中...' })
     try {
-      const imageBase64 = await this.imageToBase64(imagePath)
-      const objects = await this.recognition.detectObjects(imageBase64)
+      // 优先上传到云存储，拿到imageUrl
+      const cloudPath = `cargo_images/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`
+      let imageUrl = ''
+      try {
+        const uploadRes = await wx.cloud.uploadFile({
+          cloudPath,
+          filePath: imagePath
+        })
+        const tempUrlRes = await wx.cloud.getTempFileURL({ fileList: [uploadRes.fileID] })
+        imageUrl = tempUrlRes.fileList[0].tempFileURL
+      } catch (e) {
+        imageUrl = ''
+      }
+      let objects = []
+      if (imageUrl) {
+        objects = await this.recognition.detectObjects({ imageUrl })
+      } else {
+        // 上传失败则降级为base64
+        const imageBase64 = await this.imageToBase64(imagePath)
+        objects = await this.recognition.detectObjects({ imageBase64 })
+      }
       this.setData({
         cargoRecognitionResult: objects,
         isRecognizing: false

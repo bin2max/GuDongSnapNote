@@ -14,5 +14,6 @@
   
   <view class="secondary-buttons">
     <button class="btn-history" bindtap="onHistory">历史记录</button>
+    <button class="btn-test-env" bindtap="onTestEnv">测试环境变量</button>
   </view>
 </view> 

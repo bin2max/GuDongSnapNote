@@ -1,12 +1,14 @@
-// 腾讯云物体识别云函数
+// 腾讯云车辆识别云函数（增强版）
 const cloud = require('wx-server-sdk')
-const tencentcloud = require('tencentcloud-sdk-nodejs')
+// 推荐专用包
+const tencentcloud = require('tencentcloud-sdk-nodejs-tiia')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
-const TiaClient = tencentcloud.tia.v20190529.Client
+const TiiaClient = tencentcloud.tiia.v20190529.Client
 
 exports.main = async (event, context) => {
+  // 统一用 TENCENT_ 前缀
   const secretId = process.env.TENCENT_SECRET_ID
   const secretKey = process.env.TENCENT_SECRET_KEY
   if (!secretId || !secretKey) {
@@ -15,19 +17,23 @@ exports.main = async (event, context) => {
   const clientConfig = {
     credential: { secretId, secretKey },
     region: 'ap-beijing',
-    profile: { httpProfile: { endpoint: 'tiia.tencentcloudapi.com' } }
+    profile: { httpProfile: { endpoint: 'tiia.ap-beijing.tencentcloudapi.com' } }
   }
-  const client = new TiaClient(clientConfig)
+  const client = new TiiaClient(clientConfig)
 
   try {
-    const { imageBase64 } = event
-    if (!imageBase64) {
-      return { success: false, error: '缺少图片数据' }
+    // 支持 imageUrl 和 imageBase64，优先 imageUrl
+    const { imageUrl, imageBase64 } = event
+    if (!imageUrl && !imageBase64) {
+      return { success: false, error: '缺少图片数据（imageUrl 或 imageBase64）' }
     }
-    const params = { ImageBase64: imageBase64 }
+    const params = imageUrl ? { ImageUrl: imageUrl } : { ImageBase64: imageBase64 }
     const result = await client.RecognizeCarPro(params)
-    // 解析车辆识别结果
-    const carTags = result.CarTags || []
+    console.log('RecognizeCarPro 返回:', JSON.stringify(result))
+
+    // 兼容腾讯云SDK返回结构
+    const resp = result.Response || result
+    const carTags = resp.CarTags || []
     const carPlates = carTags.map(tag => ({
       plate: tag.PlateContent?.Plate || '',
       type: tag.Type || '',
@@ -40,12 +46,12 @@ exports.main = async (event, context) => {
       data: {
         CarTags: carTags,
         CarPlates: carPlates,
-        CarCoords: result.CarCoords || [],
-        RequestId: result.RequestId
+        CarCoords: resp.CarCoords || [],
+        RequestId: resp.RequestId
       }
     }
   } catch (error) {
-    console.error('车辆识别失败:', error)
-    return { success: false, error: error.message || '识别失败' }
+    console.error('车辆识别失败:', error, error?.response || '')
+    return { success: false, error: error.message || JSON.stringify(error) || '识别失败' }
   }
 } 

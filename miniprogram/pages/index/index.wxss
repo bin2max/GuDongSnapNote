@@ -61,7 +61,7 @@
   width: 100%;
 }
 
-.btn-history {
+.btn-history, .btn-test-env {
   width: 100%;
   height: 80rpx;
   background: rgba(255,255,255,0.2);
@@ -70,4 +70,5 @@
   color: white;
   font-size: 28rpx;
   backdrop-filter: blur(10rpx);
+  margin-bottom: 20rpx;
 } 
