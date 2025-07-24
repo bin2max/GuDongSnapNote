@@ -2,15 +2,23 @@
   <!-- 标题 -->
   <view class="form-title">识别结果</view>
 
-  <!-- 车牌号、车型、物资清单可编辑区 -->
+  <!-- 车牌号、车型、驾驶人、电话、物资清单可编辑区 -->
   <view class="form-section">
-    <view class="form-item">
+    <view class="form-row">
       <text class="label">车牌号</text>
       <input class="input" value="{{plateNumber}}" bindinput="onPlateNumberChange" placeholder="请输入车牌号" />
     </view>
-    <view class="form-item">
+    <view class="form-row">
       <text class="label">车型</text>
       <input class="input" value="{{vehicleType}}" bindinput="onVehicleTypeChange" placeholder="请输入车型" />
+    </view>
+    <view class="form-row">
+      <text class="label">驾驶人</text>
+      <input class="input" value="{{driverName}}" bindinput="onDriverNameChange" placeholder="请输入驾驶人姓名" />
+    </view>
+    <view class="form-row">
+      <text class="label">电话号码</text>
+      <input class="input" value="{{phoneNumber}}" bindinput="onPhoneNumberChange" placeholder="请输入电话号码" />
     </view>
     <view class="form-item">
       <text class="label">物资清单</text>

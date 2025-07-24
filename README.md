@@ -61,8 +61,8 @@ Gudong SnapNote/
 - 腾讯云AI能力（物体识别、语音识别）
 
 ## 联系方式
-- 作者：Your Name
-- 邮箱：your@email.com
+- 作者：Jeremy C
+- 邮箱：ldp102@163.com
 - Issues: https://github.com/yourname/Gudong-SnapNote/issues
 
 ---

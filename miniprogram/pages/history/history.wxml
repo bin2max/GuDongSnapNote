@@ -2,40 +2,42 @@
   <view class="header">
     <text class="title">历史记录</text>
   </view>
-  
-  <view class="records-list">
-    <view wx:for="{{records}}" wx:key="_id" class="record-item" bindtap="onDetail" data-id="{{item._id}}">
-      <view class="record-header">
-        <view class="plate-number">{{item.plate_number}}</view>
-        <view class="status-badge {{item.status}}">{{getStatusText(item.status)}}</view>
-      </view>
-      
-      <view class="record-info">
-        <view class="info-row">
-          <text class="label">车型：</text>
-          <text class="value">{{item.vehicle_type}}</text>
-        </view>
-        <view class="info-row">
-          <text class="label">驾驶人：</text>
-          <text class="value">{{item.driver_name}}</text>
-        </view>
-        <view class="info-row">
-          <text class="label">进场时间：</text>
-          <text class="value">{{formatTime(item.in_time)}}</text>
-        </view>
-        <view class="info-row" wx:if="{{item.out_time}}">
-          <text class="label">出场时间：</text>
-          <text class="value">{{formatTime(item.out_time)}}</text>
-        </view>
-      </view>
-      
-      <view class="cargo-summary">
-        <text class="cargo-title">物资：</text>
-        <text class="cargo-text">{{getCargoSummary(item.cargo_list)}}</text>
-      </view>
+
+  <view class="table-wrapper">
+    <view class="table-header">
+      <text class="th">序号</text>
+      <text class="th">日期</text>
+      <text class="th">车型</text>
+      <text class="th">车牌号</text>
+      <text class="th">驾驶人</text>
+      <text class="th">电话</text>
+      <text class="th">物资清单</text>
+      <text class="th">进门时间</text>
+      <text class="th">出门日期</text>
+      <text class="th">出门时间</text>
+      <text class="th">状态</text>
+      <text class="th">值班人</text>
+      <text class="th">备注</text>
     </view>
+    <block wx:for="{{records}}" wx:key="_id">
+      <view class="table-row" bindtap="onDetail" data-id="{{item._id}}">
+        <text class="td">{{item.serial_number}}</text>
+        <text class="td">{{item.date}}</text>
+        <text class="td">{{item.vehicle_type}}</text>
+        <text class="td">{{item.plate_number}}</text>
+        <text class="td">{{item.driver_name}}</text>
+        <text class="td">{{item.phone_number}}</text>
+        <text class="td">{{getCargoSummary(item.cargo_list)}}</text>
+        <text class="td">{{formatTime(item.in_time)}}</text>
+        <text class="td">{{item.out_date}}</text>
+        <text class="td">{{item.out_time}}</text>
+        <text class="td status-td {{item.status}}">{{getStatusText(item.status)}}</text>
+        <text class="td">{{item.duty_person}}</text>
+        <text class="td remark-td">{{item.remark}}</text>
+      </view>
+    </block>
   </view>
-  
+
   <view wx:if="{{records.length === 0}}" class="empty-state">
     <text class="empty-text">暂无历史记录</text>
   </view>

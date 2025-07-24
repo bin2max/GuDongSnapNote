@@ -91,12 +91,13 @@ Page({
         imageUrl = ''
       }
       let vehicleResult = null
+      const scene = this.data.mode === 'in' ? 'entry' : 'exit'
       if (imageUrl) {
-        vehicleResult = await this.recognition.recognizeVehicle({ imageUrl })
+        vehicleResult = await this.recognition.recognizeVehicle({ imageUrl, scene })
       } else {
         // 上传失败则降级为base64
         const imageBase64 = await this.imageToBase64(imagePath)
-        vehicleResult = await this.recognition.recognizeVehicle({ imageBase64 })
+        vehicleResult = await this.recognition.recognizeVehicle({ imageBase64, scene })
       }
       this.setData({
         vehicleRecognitionResult: vehicleResult,
@@ -131,12 +132,13 @@ Page({
         imageUrl = ''
       }
       let objects = []
+      const scene = this.data.mode === 'in' ? 'entry' : 'exit'
       if (imageUrl) {
-        objects = await this.recognition.detectObjects({ imageUrl })
+        objects = await this.recognition.detectObjects({ imageUrl, type: 'product', scene })
       } else {
         // 上传失败则降级为base64
         const imageBase64 = await this.imageToBase64(imagePath)
-        objects = await this.recognition.detectObjects({ imageBase64 })
+        objects = await this.recognition.detectObjects({ imageBase64, type: 'product', scene })
       }
       this.setData({
         cargoRecognitionResult: objects,

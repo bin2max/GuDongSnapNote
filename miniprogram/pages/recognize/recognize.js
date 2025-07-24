@@ -37,6 +37,10 @@ Page({
       detectionResults: cargoList,
       voiceText: ''
     });
+    // 只在onLoad中绑定录音管理器事件
+    this.recorderManager = wx.getRecorderManager();
+    this.recorderManager.onStop(this.handleRecorderStop.bind(this));
+    this.recorderManager.onError(this.handleRecorderError.bind(this));
   },
   
   // 表单输入事件
@@ -91,31 +95,38 @@ Page({
   },
   onVoiceRecognize() {
     if (this.data.recognizing) return;
-    const recorderManager = wx.getRecorderManager();
     this.setData({ recognizing: true });
     wx.showToast({ title: '正在录音...', icon: 'none', duration: 1000 });
-    recorderManager.start({
+    this.recorderManager.start({
       duration: 60000,
       format: 'mp3',
       sampleRate: 16000,
       encodeBitRate: 96000,
       numberOfChannels: 1
     });
-    recorderManager.onStop = async (res) => {
-      this.setData({ recognizing: false });
-      wx.showLoading({ title: '识别中...' });
+    setTimeout(() => {
+      if (this.data.recognizing) {
+        this.recorderManager.stop();
+      }
+    }, 5000); // 最多录5秒
+  },
+
+  handleRecorderStop(res) {
+    this.setData({ recognizing: false });
+    wx.showLoading({ title: '识别中...' });
+    (async () => {
       try {
         // 1. 上传音频到云存储
-        const cloudPath = `asr_voice/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.mp3`
+        const cloudPath = `asr_voice/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.mp3`;
         const uploadRes = await wx.cloud.uploadFile({
           cloudPath,
           filePath: res.tempFilePath
-        })
+        });
         // 2. 调用云函数进行ASR识别
         const asrRes = await wx.cloud.callFunction({
           name: 'asrVoice',
           data: { fileID: uploadRes.fileID }
-        })
+        });
         wx.hideLoading();
         if (asrRes.result && asrRes.result.success) {
           this.setData({ voiceText: asrRes.result.text });
@@ -127,16 +138,12 @@ Page({
         wx.hideLoading();
         wx.showToast({ title: '识别失败', icon: 'error' });
       }
-    };
-    recorderManager.onError = () => {
-      this.setData({ recognizing: false });
-      wx.showToast({ title: '录音失败', icon: 'error' });
-    };
-    setTimeout(() => {
-      if (this.data.recognizing) {
-        recorderManager.stop();
-      }
-    }, 5000); // 最多录5秒
+    })();
+  },
+
+  handleRecorderError() {
+    this.setData({ recognizing: false });
+    wx.showToast({ title: '录音失败', icon: 'error' });
   },
   onVoiceUpdate() {
     // 简单解析voiceText，自动填充车牌号、车型、物资
