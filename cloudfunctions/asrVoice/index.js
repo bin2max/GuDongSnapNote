@@ -7,11 +7,25 @@ const AsrClient = tencentcloud.asr.v20190614.Client
 
 exports.main = async (event, context) => {
   const { fileID } = event
-  if (!fileID) return { success: false, error: '缺少音频fileID' }
+  if (!fileID) {
+    console.error('缺少音频fileID', event)
+    return { success: false, error: '缺少音频fileID' }
+  }
 
   // 获取音频临时链接
-  const res = await cloud.getTempFileURL({ fileList: [fileID] })
-  const url = res.fileList[0].tempFileURL
+  let url = ''
+  try {
+    const res = await cloud.getTempFileURL({ fileList: [fileID] })
+    url = res.fileList[0].tempFileURL
+    console.log('音频临时链接:', url)
+    if (!url) {
+      console.error('获取音频临时链接失败', res)
+      return { success: false, error: '获取音频临时链接失败' }
+    }
+  } catch (e) {
+    console.error('获取音频临时链接异常', e)
+    return { success: false, error: '获取音频临时链接异常: ' + e.message }
+  }
 
   // 腾讯云ASR配置
   const clientConfig = {
@@ -27,12 +41,15 @@ exports.main = async (event, context) => {
   // 调用ASR
   try {
     const params = {
-      EngSerViceType: '16k_zh', // 普通话16k
+      EngineModelType: '16k_zh', // 推荐新参数
       SourceType: 0,
       Url: url,
-      VoiceFormat: 'mp3'
+      ChannelNum: 1, // 单声道
+      ResTextFormat: 0 // 返回文本格式，0:基础文本(推荐)
     }
+    console.log('调用ASR参数:', params)
     const result = await client.CreateRecTask(params)
+    console.log('CreateRecTask结果:', result)
     const taskId = result.Data.TaskId
 
     // 轮询获取识别结果
@@ -40,17 +57,23 @@ exports.main = async (event, context) => {
     for (let i = 0; i < 20; i++) {
       await new Promise(r => setTimeout(r, 2000))
       const statusRes = await client.DescribeTaskStatus({ TaskId: taskId })
+      console.log('DescribeTaskStatus:', statusRes)
       if (statusRes.Data.StatusStr === 'success') {
         text = statusRes.Data.Result
         break
       }
       if (statusRes.Data.StatusStr === 'failed') {
-        return { success: false, error: 'ASR识别失败' }
+        console.error('ASR识别失败', statusRes)
+        return { success: false, error: 'ASR识别失败', detail: statusRes }
       }
     }
-    if (!text) return { success: false, error: 'ASR超时' }
+    if (!text) {
+      console.error('ASR超时')
+      return { success: false, error: 'ASR超时' }
+    }
     return { success: true, text }
   } catch (e) {
-    return { success: false, error: e.message }
+    console.error('ASR调用异常', e)
+    return { success: false, error: e.message, detail: e }
   }
 } 
