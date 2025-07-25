@@ -21,6 +21,10 @@ exports.main = async (event, context) => {
         return await findRecord(data)
       case 'list':
         return await listRecords(data)
+      case 'findById':
+        return await findRecordById(data)
+      case 'findLastInByPlate':
+        return await findLastInByPlate(data)
       default:
         return {
           success: false,
@@ -186,4 +190,32 @@ async function listRecords(data) {
       pageSize
     }
   }
+} 
+
+// 新增：根据id查找单条记录
+async function findRecordById(data) {
+  const { id } = data
+  if (!id) {
+    return { success: false, error: '缺少id' }
+  }
+  const result = await vehicleRecordsCollection.doc(id).get()
+  return {
+    success: true,
+    data: result.data
+  }
+} 
+
+// 新增：根据车牌号查找最近的进场记录
+async function findLastInByPlate(data) {
+  const { plate_number } = data
+  if (!plate_number) return { success: false, error: '缺少车牌号' }
+  const result = await vehicleRecordsCollection
+    .where({ plate_number, status: 'in' })
+    .orderBy('in_time', 'desc')
+    .limit(1)
+    .get()
+  if (result.data.length === 0) {
+    return { success: false, error: '未找到进场记录' }
+  }
+  return { success: true, data: result.data[0] }
 } 

@@ -23,22 +23,27 @@ Page({
   // 查找进场记录
   findInRecord() {
     wx.showLoading({ title: '查找记录中...' })
-    
-    // TODO: 调用云函数查找同车牌号两个月内的最近一次进场记录
-    // 这里使用模拟数据
-    setTimeout(() => {
-      const inCargoList = [
-        { name: '钢管', count: 10 },
-        { name: '阀门', count: 2 }
-      ]
-      
-      this.setData({ inCargoList })
-      
-      // 进行物资比对
-      this.compareCargo()
-      
-      wx.hideLoading()
-    }, 1000)
+    wx.cloud.callFunction({
+      name: 'vehicleRecords',
+      data: {
+        action: 'findLastInByPlate',
+        data: { plate_number: this.data.plateNumber }
+      },
+      success: res => {
+        wx.hideLoading()
+        if (res.result && res.result.success && res.result.data) {
+          const inCargoList = res.result.data.cargo_list || []
+          this.setData({ inCargoList })
+          this.compareCargo()
+        } else {
+          wx.showToast({ title: '未找到进场记录', icon: 'error' })
+        }
+      },
+      fail: () => {
+        wx.hideLoading()
+        wx.showToast({ title: '查找失败', icon: 'error' })
+      }
+    })
   },
   
   // 物资比对

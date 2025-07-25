@@ -56,7 +56,7 @@
         <view wx:for="{{detectionResults}}" wx:key="index" class="detection-item">
           <text class="detection-label">{{item.name}}</text>
           <text class="detection-count">×{{item.count}}</text>
-          <text class="detection-confidence" wx:if="{{item.confidence}}">{{item.confidence ? (item.confidence * 100) : ''}}%</text>
+          <text class="detection-confidence" wx:if="{{item.confidence}}">{{item.confidence ? (item.confidence) : ''}}%</text>
         </view>
       </view>
     </view>

@@ -108,7 +108,7 @@ Page({
       if (this.data.recognizing) {
         this.recorderManager.stop();
       }
-    }, 5000); // 最多录5秒
+    }, 13000); // 最多录13秒
   },
 
   handleRecorderStop(res) {
@@ -129,7 +129,13 @@ Page({
         });
         wx.hideLoading();
         if (asrRes.result && asrRes.result.success) {
-          this.setData({ voiceText: asrRes.result.text });
+          // 去除ASR返回的时间戳前缀，只保留纯文本（全局替换）
+          let text = asrRes.result.text || '';
+          text = text.replace(/\[.*?\]\s*/g, '').replace(/\n/g, '');
+          // 追加到voiceText尾部
+          const oldText = this.data.voiceText || '';
+          const newText = oldText ? (oldText + text) : text;
+          this.setData({ voiceText: newText });
           wx.showToast({ title: '识别完成', icon: 'success' });
         } else {
           wx.showToast({ title: '识别失败', icon: 'error' });
@@ -146,35 +152,26 @@ Page({
     wx.showToast({ title: '录音失败', icon: 'error' });
   },
   onVoiceUpdate() {
-    // 简单解析voiceText，自动填充车牌号、车型、物资
     const text = this.data.voiceText.trim();
     if (!text) return;
-    // 车牌号正则
-    const plateRegex = /[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-Z][A-Z0-9]{5}/;
-    const vehicleTypes = ['汽车', '卡车', '货车', '面包车', '轿车', 'SUV', '皮卡', '小轿车', '大货车'];
-    let plateNumber = '';
-    let vehicleType = '';
-    let cargoList = [];
-    // 解析车牌号
-    const plateMatch = text.match(plateRegex);
-    if (plateMatch) plateNumber = plateMatch[0];
-    // 解析车型
-    for (const type of vehicleTypes) {
-      if (text.includes(type)) {
-        vehicleType = type;
-        break;
+    wx.cloud.callFunction({
+      name: 'parseVehicleText',
+      data: { text },
+      success: res => {
+        if (res.result && res.result.success) {
+          const { plateNumber, vehicleType, cargoList } = res.result.data;
+          if (plateNumber) this.setData({ plateNumber });
+          if (vehicleType) this.setData({ vehicleType });
+          if (cargoList && cargoList.length > 0) this.setData({ cargoList });
+          wx.showToast({ title: '已根据语音内容更新', icon: 'success' });
+        } else {
+          wx.showToast({ title: '未识别到有效信息', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '解析失败', icon: 'error' });
       }
-    }
-    // 解析物资（假设格式：物资名+数量+单位）
-    const cargoRegex = /([\u4e00-\u9fa5]+)(\d+)[^\d\u4e00-\u9fa5]?/g;
-    let match;
-    while ((match = cargoRegex.exec(text))) {
-      cargoList.push({ name: match[1], count: parseInt(match[2]) });
-    }
-    if (plateNumber) this.setData({ plateNumber });
-    if (vehicleType) this.setData({ vehicleType });
-    if (cargoList.length > 0) this.setData({ cargoList });
-    wx.showToast({ title: '已根据语音内容更新', icon: 'success' });
+    });
   },
   
   // 确认进场

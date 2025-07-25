@@ -71,6 +71,8 @@ exports.main = async (event, context) => {
       console.error('ASR超时')
       return { success: false, error: 'ASR超时' }
     }
+    // 去除时间戳前缀，只保留纯文本（全局替换）
+    text = text.replace(/\[.*?\]\s*/g, '').replace(/\n/g, '');
     return { success: true, text }
   } catch (e) {
     console.error('ASR调用异常', e)

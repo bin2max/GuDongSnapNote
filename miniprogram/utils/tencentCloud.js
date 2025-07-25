@@ -34,7 +34,14 @@ class TencentCloudRecognition {
           if (res.result && res.result.success && res.result.data && res.result.data.CarTags) {
             resolve(res.result.data.CarTags)
           } else if (res.result && res.result.data && res.result.data.Products) {
-            resolve(res.result.data.Products)
+            // 适配商品识别字段
+            const products = res.result.data.Products.map(item => ({
+              name: item.Name,
+              confidence: item.Confidence,
+              count: 1, // 商品识别没有数量，默认1
+              ...item // 保留原始字段
+            }))
+            resolve(products)
           } else if (res.result && res.result.data && res.result.data.Objects) {
             resolve(res.result.data.Objects)
           } else if (res.result && res.result.Objects) {

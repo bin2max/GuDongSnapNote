@@ -17,6 +17,19 @@ Page({
     }
   },
   onLoad(query) {
-    // TODO: 根据id查询数据库获取详情
+    const id = query.id
+    if (!id) return
+    wx.cloud.callFunction({
+      name: 'vehicleRecords',
+      data: {
+        action: 'findById',
+        data: { id }
+      },
+      success: res => {
+        if (res.result && res.result.success && res.result.data) {
+          this.setData({ record: res.result.data })
+        }
+      }
+    })
   }
 }) 
