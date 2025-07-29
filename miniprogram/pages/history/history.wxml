@@ -21,19 +21,19 @@
     </view>
     <block wx:for="{{records}}" wx:key="_id">
       <view class="table-row" bindtap="onDetail" data-id="{{item._id}}">
-        <text class="td">{{item.serial_number}}</text>
-        <text class="td">{{item.date}}</text>
-        <text class="td">{{item.vehicle_type}}</text>
-        <text class="td">{{item.plate_number}}</text>
-        <text class="td">{{item.driver_name}}</text>
-        <text class="td">{{item.phone_number}}</text>
-        <text class="td">{{getCargoSummary(item.cargo_list)}}</text>
-        <text class="td">{{formatTime(item.in_time)}}</text>
-        <text class="td">{{item.out_date}}</text>
-        <text class="td">{{item.out_time}}</text>
-        <text class="td status-td {{item.status}}">{{getStatusText(item.status)}}</text>
-        <text class="td">{{item.duty_person}}</text>
-        <text class="td remark-td">{{item.remark}}</text>
+        <text class="td">{{item.serial_number || '-'}}</text>
+        <text class="td">{{item.date || '-'}}</text>
+        <text class="td">{{item.vehicle_type || '-'}}</text>
+        <text class="td">{{item.plate_number || '-'}}</text>
+        <text class="td">{{item.driver_name || '-'}}</text>
+        <text class="td">{{item.phone_number || '-'}}</text>
+        <text class="td">{{item.formatted_cargo}}</text>
+        <text class="td">{{item.formatted_in_time}}</text>
+        <text class="td">{{item.out_date || '-'}}</text>
+        <text class="td">{{item.formatted_out_time}}</text>
+        <text class="td status-td {{item.status}}">{{item.formatted_status}}</text>
+        <text class="td">{{item.duty_person || '-'}}</text>
+        <text class="td remark-td">{{item.remark || '-'}}</text>
       </view>
     </block>
   </view>

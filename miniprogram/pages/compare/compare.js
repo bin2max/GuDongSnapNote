@@ -9,13 +9,25 @@ Page({
   },
   
   onLoad(query) {
-    const { plateNumber, vehicleType, imageUrl, cargoList } = query
-    
+    const { plateNumber, vehicleType, imageUrl, cargoList, outVehicleImageUrl } = query
     this.setData({
       plateNumber,
-      outCargoList: JSON.parse(decodeURIComponent(cargoList))
+      outCargoList: JSON.parse(decodeURIComponent(cargoList)),
+      outPhotoFileID: '',
+      outVehicleImageUrl: outVehicleImageUrl ? decodeURIComponent(outVehicleImageUrl) : ''
     })
-    
+    // 如果有出场车辆本地图片，自动上传
+    if (outVehicleImageUrl) {
+      const filePath = decodeURIComponent(outVehicleImageUrl)
+      const cloudPath = `vehicle_photos/out_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`
+      wx.cloud.uploadFile({
+        cloudPath,
+        filePath,
+        success: uploadRes => {
+          this.setData({ outPhotoFileID: uploadRes.fileID })
+        }
+      })
+    }
     // 查找进场记录
     this.findInRecord()
   },
@@ -95,34 +107,57 @@ Page({
   
   // 确认操作
   onConfirm() {
-    const { result, plateNumber, outCargoList } = this.data
+    const { result, plateNumber, outCargoList, outPhotoFileID } = this.data
     
     wx.showLoading({ title: '处理中...' })
     
-    // TODO: 调用云函数更新出场记录
-    setTimeout(() => {
+    if (result === 'allowed') {
+      const now = new Date()
+      const outDate = now.toISOString().split('T')[0]
+      const outTime = now.toISOString()
+      wx.cloud.callFunction({
+        name: 'vehicleRecords',
+        data: {
+          action: 'update',
+          data: {
+            plate_number: plateNumber,
+            out_date: outDate,
+            out_time: outTime,
+            status: 'completed',
+            out_photo_url: outPhotoFileID
+          }
+        },
+        success: res => {
+          wx.hideLoading()
+          if (res.result && res.result.success) {
+            wx.showModal({
+              title: '放行成功',
+              content: '车辆已放行',
+              showCancel: false,
+              success: () => {
+                wx.redirectTo({ url: '/pages/index/index' })
+              }
+            })
+          } else {
+            wx.showToast({ title: '更新失败', icon: 'error' })
+          }
+        },
+        fail: () => {
+          wx.hideLoading()
+          wx.showToast({ title: '更新失败', icon: 'error' })
+        }
+      })
+    } else {
       wx.hideLoading()
-      
-      if (result === 'allowed') {
-        wx.showModal({
-          title: '放行成功',
-          content: '车辆已放行',
-          showCancel: false,
-          success: () => {
-            wx.redirectTo({ url: '/pages/index/index' })
-          }
-        })
-      } else {
-        wx.showModal({
-          title: '拦截成功',
-          content: '车辆已被拦截，请检查物资',
-          showCancel: false,
-          success: () => {
-            wx.redirectTo({ url: '/pages/index/index' })
-          }
-        })
-      }
-    }, 1000)
+      wx.showModal({
+        title: '拦截成功',
+        content: '车辆已被拦截，请检查物资',
+        showCancel: false,
+        success: () => {
+          wx.redirectTo({ url: '/pages/index/index' })
+        }
+      })
+    }
   },
   
   // 返回首页

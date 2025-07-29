@@ -14,7 +14,9 @@ Page({
     mode: 'in',
     isRecognizing: false,
     recorder: null,
-    recognizing: false
+    recognizing: false,
+    outVehicleImageUrl: '', // 出场车辆本地图片路径
+    outPhotoFileID: ''     // 出场车辆照片 fileID
   },
   
   onLoad(query) {
@@ -251,8 +253,7 @@ Page({
   
   // 确认出场
   async onNext() {
-    const { plateNumber, vehicleType, cargoList, vehicleImageUrl, cargoImageUrl } = this.data
-    
+    const { plateNumber, vehicleType, cargoList, vehicleImageUrl, cargoImageUrl, outVehicleImageUrl } = this.data
     if (!plateNumber || !vehicleType) {
       wx.showToast({
         title: '请填写完整信息',
@@ -260,10 +261,9 @@ Page({
       })
       return
     }
-    
-    // 跳转到比对页面
+    // 直接跳转到 compare 页面，传递本地图片路径
     wx.navigateTo({
-      url: `/pages/compare/compare?plateNumber=${plateNumber}&vehicleType=${vehicleType}&vehicleImageUrl=${encodeURIComponent(vehicleImageUrl)}&cargoImageUrl=${encodeURIComponent(cargoImageUrl)}&cargoList=${encodeURIComponent(JSON.stringify(cargoList))}`
+      url: `/pages/compare/compare?plateNumber=${plateNumber}&vehicleType=${vehicleType}&vehicleImageUrl=${encodeURIComponent(vehicleImageUrl)}&cargoImageUrl=${encodeURIComponent(cargoImageUrl)}&cargoList=${encodeURIComponent(JSON.stringify(cargoList))}&outVehicleImageUrl=${encodeURIComponent(outVehicleImageUrl)}`
     })
   },
   
@@ -298,5 +298,15 @@ Page({
       console.error('生成序号失败:', error)
       return Date.now()
     }
+  },
+
+  chooseOutVehicleImage() {
+    wx.chooseImage({
+      count: 1,
+      sourceType: ['camera', 'album'],
+      success: res => {
+        this.setData({ outVehicleImageUrl: res.tempFilePaths[0] })
+      }
+    })
   }
 }) 

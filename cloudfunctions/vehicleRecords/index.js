@@ -98,19 +98,28 @@ async function updateRecord(data) {
     remark
   } = data
   
-  // 查找同车牌号两个月内的最近一次进场记录
-  const twoMonthsAgo = new Date()
-  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
+  console.log('更新记录参数:', { plate_number, out_date, out_time, status })
   
+  // 查找同车牌号的最远一次进场记录（与 findLastInByPlate 保持一致，不添加时间限制）
   const record = await vehicleRecordsCollection
     .where({
       plate_number: plate_number,
-      in_time: db.command.gte(twoMonthsAgo),
       status: 'in'
     })
     .orderBy('in_time', 'desc')
     .limit(1)
     .get()
+  
+  console.log('查询结果:', { 
+    found: record.data.length > 0, 
+    recordCount: record.data.length,
+    firstRecord: record.data[0] ? {
+      _id: record.data[0]._id,
+      plate_number: record.data[0].plate_number,
+      in_time: record.data[0].in_time,
+      status: record.data[0].status
+    } : null
+  })
   
   if (record.data.length === 0) {
     return {
@@ -130,9 +139,13 @@ async function updateRecord(data) {
     update_time: db.serverDate()
   }
   
+  console.log('准备更新记录:', { recordId, updateData })
+  
   await vehicleRecordsCollection.doc(recordId).update({
     data: updateData
   })
+  
+  console.log('记录更新成功')
   
   return {
     success: true,
