@@ -3,13 +3,44 @@
     <text class="title">车辆进出管理系统</text>
   </view>
   
+  <!-- 终端类型选择区域 -->
+  <view class="terminal-selector">
+    <text class="selector-title">请选择当前终端类型：</text>
+    <view class="terminal-buttons">
+      <button class="terminal-btn {{terminalType === 'parking' ? 'active' : ''}}" 
+              bindtap="selectTerminal" data-type="parking">
+        停车区
+      </button>
+      <button class="terminal-btn {{terminalType === 'disposal' ? 'active' : ''}}" 
+              bindtap="selectTerminal" data-type="disposal">
+        处置区
+      </button>
+    </view>
+    <text wx:if="{{terminalType}}" class="current-terminal">
+      当前终端：{{terminalType === 'parking' ? '停车区' : '处置区'}}
+    </text>
+  </view>
+  
   <view class="main-buttons">
-    <button class="btn-primary" bindtap="onInRegister">
+    <button class="btn-primary" bindtap="onInRegister" disabled="{{!terminalType}}">
       <text class="btn-text">进场登记</text>
     </button>
-    <button class="btn-secondary" bindtap="onOutRegister">
+    <button class="btn-secondary" bindtap="onOutRegister" disabled="{{!terminalType}}">
       <text class="btn-text">出场登记</text>
     </button>
+  </view>
+  
+  <view class="list-section">
+    <view class="list-row">
+      <text class="label">启用白名单</text>
+      <switch checked="{{whitelistEnabled}}" bindchange="onToggleWhitelist" />
+      <button class="btn-upload" bindtap="onUploadWhitelist">上传白名单</button>
+    </view>
+    <view class="list-row">
+      <text class="label">启用黑名单</text>
+      <switch checked="{{blacklistEnabled}}" bindchange="onToggleBlacklist" />
+      <button class="btn-upload" bindtap="onUploadBlacklist">上传黑名单</button>
+    </view>
   </view>
   
   <view class="secondary-buttons">

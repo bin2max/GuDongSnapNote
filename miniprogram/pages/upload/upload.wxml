@@ -80,11 +80,11 @@
   
   <!-- 下一步按钮 -->
   <view class="bottom-section">
-    <button wx:if="{{vehicleImageUrl && cargoImageUrl}}" class="btn-next" bindtap="onNext">
+    <button wx:if="{{vehicleImageUrl}}" class="btn-next" bindtap="onNext">
       <text class="btn-text">下一步</text>
     </button>
     <button wx:else class="btn-next disabled" disabled>
-      <text class="btn-text">请完成拍照</text>
+      <text class="btn-text">请拍摄车辆正面照片</text>
     </button>
   </view>
 </view> 

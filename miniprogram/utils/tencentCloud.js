@@ -9,28 +9,44 @@ class TencentCloudRecognition {
     let vehicleType = ''
     let brand = ''
     
+    console.log('=== recognizeVehicle 解析开始 ===')
+    console.log('detectObjects 返回结果:', result)
+    
     if (result && result.length > 0) {
       const tag = result[0]
+      console.log('第一个标签:', tag)
+      
       // 兼容 CarPlates 和 CarTags 两种结构
-      if (tag.plate) {
+      if (tag.plate !== undefined) {
         // CarPlates 结构
-        plateNumber = tag.plate
+        plateNumber = tag.plate || ''
         vehicleType = tag.type || ''
         brand = tag.brand || ''
-      } else if (tag.PlateContent && tag.PlateContent.Plate) {
+        console.log('使用 CarPlates 结构解析:', { plateNumber, vehicleType, brand })
+      } else if (tag.PlateContent && tag.PlateContent.Plate !== undefined) {
         // CarTags 结构
-        plateNumber = tag.PlateContent.Plate
+        plateNumber = tag.PlateContent.Plate || ''
         vehicleType = tag.Type || ''
         brand = tag.Brand || ''
+        console.log('使用 CarTags 结构解析:', { plateNumber, vehicleType, brand })
+      } else {
+        // 兜底逻辑：尝试从任何可能的字段获取信息
+        plateNumber = tag.plate || tag.PlateContent?.Plate || tag.Plate || ''
+        vehicleType = tag.type || tag.Type || ''
+        brand = tag.brand || tag.Brand || ''
+        console.log('使用兜底逻辑解析:', { plateNumber, vehicleType, brand })
       }
     }
     
-    return {
+    const finalResult = {
       plateNumber,
       vehicleType,
       brand,
       objects: result
     }
+    
+    console.log('最终解析结果:', finalResult)
+    return finalResult
   }
 
   // 物体识别（车辆正面或装载物资）
@@ -52,7 +68,7 @@ class TencentCloudRecognition {
             if (res.result.data.CarPlates && res.result.data.CarPlates.length > 0) {
               resolve(res.result.data.CarPlates)
             } else {
-              resolve(res.result.data.CarTags)
+            resolve(res.result.data.CarTags)
             }
           } else if (res.result && res.result.data && res.result.data.Products) {
             // 适配商品识别字段

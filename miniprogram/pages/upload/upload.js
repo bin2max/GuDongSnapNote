@@ -12,7 +12,8 @@ Page({
   
   onLoad(options) {
     this.setData({
-      mode: options.mode || 'in'
+      mode: options.mode || 'in',
+      terminalType: options.terminalType || ''
     })
     this.recognition = new TencentCloudRecognition()
   },
@@ -23,10 +24,14 @@ Page({
       count: 1,
       sourceType: ['camera'],
       success: res => {
+        console.log('=== 车辆正面拍照成功 ===')
+        console.log('选择的图片路径:', res.tempFilePaths[0])
         this.setData({ vehicleImageUrl: res.tempFilePaths[0] })
+        console.log('setData后的vehicleImageUrl:', this.data.vehicleImageUrl)
         this.recognizeVehicle(res.tempFilePaths[0])
       },
       fail: err => {
+        console.error('车辆正面拍照失败:', err)
         wx.showToast({ title: '拍照失败', icon: 'error' })
       }
     })
@@ -36,10 +41,14 @@ Page({
       count: 1,
       sourceType: ['album'],
       success: res => {
+        console.log('=== 选择车辆正面图片成功 ===')
+        console.log('选择的图片路径:', res.tempFilePaths[0])
         this.setData({ vehicleImageUrl: res.tempFilePaths[0] })
+        console.log('setData后的vehicleImageUrl:', this.data.vehicleImageUrl)
         this.recognizeVehicle(res.tempFilePaths[0])
       },
       fail: err => {
+        console.error('选择车辆正面图片失败:', err)
         wx.showToast({ title: '选择图片失败', icon: 'error' })
       }
     })
@@ -50,10 +59,14 @@ Page({
       count: 1,
       sourceType: ['camera'],
       success: res => {
+        console.log('=== 装载区域拍照成功 ===')
+        console.log('选择的图片路径:', res.tempFilePaths[0])
         this.setData({ cargoImageUrl: res.tempFilePaths[0] })
+        console.log('setData后的cargoImageUrl:', this.data.cargoImageUrl)
         this.recognizeCargo(res.tempFilePaths[0])
       },
       fail: err => {
+        console.error('装载区域拍照失败:', err)
         wx.showToast({ title: '拍照失败', icon: 'error' })
       }
     })
@@ -63,14 +76,19 @@ Page({
       count: 1,
       sourceType: ['album'],
       success: res => {
+        console.log('=== 选择装载区域图片成功 ===')
+        console.log('选择的图片路径:', res.tempFilePaths[0])
         this.setData({ cargoImageUrl: res.tempFilePaths[0] })
+        console.log('setData后的cargoImageUrl:', this.data.cargoImageUrl)
         this.recognizeCargo(res.tempFilePaths[0])
       },
       fail: err => {
+        console.error('选择装载区域图片失败:', err)
         wx.showToast({ title: '选择图片失败', icon: 'error' })
       }
     })
   },
+  
   // 车辆正面识别
   async recognizeVehicle(imagePath) {
     if (this.data.isRecognizing) return
@@ -103,6 +121,11 @@ Page({
         vehicleRecognitionResult: vehicleResult,
         isRecognizing: false
       })
+      console.log('=== 车辆识别完成 ===')
+      console.log('识别结果:', vehicleResult)
+      console.log('车牌号:', vehicleResult?.plateNumber)
+      console.log('车型:', vehicleResult?.vehicleType)
+      console.log('品牌:', vehicleResult?.brand)
       wx.hideLoading()
       wx.showToast({ title: '车辆识别完成', icon: 'success' })
     } catch (error) {
@@ -166,18 +189,29 @@ Page({
   },
   // 下一步
   onNext() {
-    const { vehicleImageUrl, cargoImageUrl, vehicleRecognitionResult, cargoRecognitionResult } = this.data
-    if (!vehicleImageUrl || !cargoImageUrl) {
-      wx.showToast({ title: '请完成拍照', icon: 'error' })
+    const { vehicleImageUrl, cargoImageUrl, vehicleRecognitionResult, cargoRecognitionResult, mode } = this.data
+    
+    console.log('=== onNext 参数 ===')
+    console.log('vehicleImageUrl:', vehicleImageUrl)
+    console.log('cargoImageUrl:', cargoImageUrl)
+    console.log('vehicleRecognitionResult:', vehicleRecognitionResult)
+    console.log('cargoRecognitionResult:', cargoRecognitionResult)
+    console.log('mode:', mode)
+    
+    if (!vehicleImageUrl) {
+      wx.showToast({ title: '请拍摄车辆正面照片', icon: 'error' })
       return
     }
-    wx.navigateTo({
-      url: `/pages/recognize/recognize?mode=${this.data.mode}` +
-        `&vehicleImageUrl=${encodeURIComponent(vehicleImageUrl)}` +
-        `&cargoImageUrl=${encodeURIComponent(cargoImageUrl)}` +
-        `&plateNumber=${vehicleRecognitionResult?.plateNumber || ''}` +
-        `&vehicleType=${vehicleRecognitionResult?.vehicleType || ''}` +
-        `&cargoList=${encodeURIComponent(JSON.stringify(cargoRecognitionResult))}`
-    })
+    
+    const url = `/pages/recognize/recognize?mode=${mode}&terminalType=${this.data.terminalType}` +
+      `&vehicleImageUrl=${encodeURIComponent(vehicleImageUrl)}` +
+      `&cargoImageUrl=${encodeURIComponent(cargoImageUrl || '')}` +
+      `&plateNumber=${vehicleRecognitionResult?.plateNumber || ''}` +
+      `&vehicleType=${vehicleRecognitionResult?.vehicleType || ''}` +
+      `&cargoList=${encodeURIComponent(JSON.stringify(cargoRecognitionResult || []))}`
+    
+    console.log('跳转URL:', url)
+    
+    wx.navigateTo({ url })
   }
 }) 

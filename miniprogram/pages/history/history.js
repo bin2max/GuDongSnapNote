@@ -4,7 +4,13 @@ Page({
     loading: false,
     hasMore: true,
     page: 1,
-    pageSize: 20
+    pageSize: 20,
+    // 日期筛选相关
+    showDateFilter: false,
+    startDate: '',
+    endDate: '',
+    // 导出相关
+    exporting: false
   },
   
   onLoad() {
@@ -33,14 +39,23 @@ Page({
     this.setData({ loading: true })
     
     try {
+      // 构建查询参数
+      const queryData = {
+        page: this.data.page,
+        pageSize: this.data.pageSize
+      }
+      
+      // 添加日期筛选条件
+      if (this.data.startDate && this.data.endDate) {
+        queryData.startDate = this.data.startDate
+        queryData.endDate = this.data.endDate
+      }
+      
       const result = await wx.cloud.callFunction({
         name: 'vehicleRecords',
         data: {
           action: 'list',
-          data: {
-            page: this.data.page,
-            pageSize: this.data.pageSize
-          }
+          data: queryData
         }
       })
       
@@ -110,9 +125,12 @@ Page({
   // 获取状态文本
   getStatusText(status) {
     const statusMap = {
-      'in': '在场',
-      'completed': '已完成',
-      'blocked': '已拦截'
+      'parking': '停车区',
+      'disposal': '处置区',
+      'out': '离场',
+      'in': '在场', // 保留旧状态兼容性
+      'completed': '已完成', // 保留旧状态兼容性
+      'blocked': '已拦截' // 保留旧状态兼容性
     }
     return statusMap[status] || status || '未知'
   },
@@ -149,7 +167,7 @@ Page({
       return ''
     }
     try {
-      const date = new Date(timeStr)
+    const date = new Date(timeStr)
       if (isNaN(date.getTime())) {
         console.log('时间解析失败，返回原字符串')
         return timeStr
@@ -204,5 +222,150 @@ Page({
   // 上拉加载更多
   onReachBottom() {
     this.loadRecords()
+  },
+  
+  // 切换日期筛选显示
+  toggleDateFilter() {
+    this.setData({
+      showDateFilter: !this.data.showDateFilter
+    })
+  },
+  
+  // 开始日期变化
+  onStartDateChange(e) {
+    this.setData({
+      startDate: e.detail.value
+    })
+  },
+  
+  // 结束日期变化
+  onEndDateChange(e) {
+    this.setData({
+      endDate: e.detail.value
+    })
+  },
+  
+  // 应用日期筛选
+  applyDateFilter() {
+    if (this.data.startDate && this.data.endDate && this.data.startDate > this.data.endDate) {
+      wx.showToast({
+        title: '开始日期不能晚于结束日期',
+        icon: 'error'
+      })
+      return
+    }
+    
+    this.setData({
+      showDateFilter: false,
+      records: [],
+      page: 1,
+      hasMore: true
+    })
+    this.loadRecords()
+  },
+  
+  // 清除日期筛选
+  clearDateFilter() {
+    this.setData({
+      startDate: '',
+      endDate: '',
+      showDateFilter: false,
+      records: [],
+      page: 1,
+      hasMore: true
+    })
+    this.loadRecords()
+  },
+  
+  // 导出记录
+  async exportRecords() {
+    if (this.data.exporting) return
+    
+    this.setData({ exporting: true })
+    wx.showLoading({ title: '导出中...' })
+    
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'exportRecords',
+        data: {
+          action: 'export',
+          startDate: this.data.startDate,
+          endDate: this.data.endDate
+        }
+      })
+      
+      if (result.result.success) {
+        const { tempFileURL, fileName, recordCount } = result.result.data
+        
+        // 显示导出成功提示
+        wx.hideLoading()
+        wx.showModal({
+          title: '导出成功',
+          content: `已导出${recordCount}条记录，文件名为：${fileName}`,
+          confirmText: '下载',
+          cancelText: '分享',
+          success: (res) => {
+            if (res.confirm) {
+              // 下载文件
+              wx.downloadFile({
+                url: tempFileURL,
+                success: (downloadRes) => {
+                  wx.openDocument({
+                    filePath: downloadRes.tempFilePath,
+                    fileType: 'xlsx',
+                    success: () => {
+                      console.log('文件打开成功')
+                    },
+                    fail: (err) => {
+                      console.error('文件打开失败:', err)
+                      wx.showToast({
+                        title: '文件打开失败',
+                        icon: 'error'
+                      })
+                    }
+                  })
+                },
+                fail: (err) => {
+                  console.error('文件下载失败:', err)
+                  wx.showToast({
+                    title: '文件下载失败',
+                    icon: 'error'
+                  })
+                }
+              })
+            } else if (res.cancel) {
+              // 分享文件
+              wx.showShareMenu({
+                withShareTicket: true,
+                menus: ['shareAppMessage', 'shareTimeline']
+              })
+              
+              // 复制链接到剪贴板
+              wx.setClipboardData({
+                data: tempFileURL,
+                success: () => {
+                  wx.showToast({
+                    title: '下载链接已复制',
+                    icon: 'success'
+                  })
+                }
+              })
+            }
+          }
+        })
+      } else {
+        throw new Error(result.result.error)
+      }
+      
+    } catch (error) {
+      console.error('导出失败:', error)
+      wx.hideLoading()
+      wx.showToast({
+        title: '导出失败',
+        icon: 'error'
+      })
+    } finally {
+      this.setData({ exporting: false })
+    }
   }
 }) 

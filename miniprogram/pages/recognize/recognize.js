@@ -12,6 +12,7 @@ Page({
     detectionResults: [],
     voiceText: '',
     mode: 'in',
+    terminalType: '', // 终端类型
     isRecognizing: false,
     recorder: null,
     recognizing: false,
@@ -20,6 +21,11 @@ Page({
   },
   
   onLoad(query) {
+    console.log('=== recognize 页面加载 ===')
+    console.log('接收到的参数:', query)
+    console.log('vehicleImageUrl 原始值:', query.vehicleImageUrl)
+    console.log('cargoImageUrl 原始值:', query.cargoImageUrl)
+    
     let cargoList = [];
     try {
       cargoList = JSON.parse(decodeURIComponent(query.cargoList || '[]'));
@@ -27,10 +33,18 @@ Page({
     } catch (e) {
       cargoList = [];
     }
+    
+    const vehicleImageUrl = decodeURIComponent(query.vehicleImageUrl || '');
+    const cargoImageUrl = decodeURIComponent(query.cargoImageUrl || '');
+    
+    console.log('解码后的 vehicleImageUrl:', vehicleImageUrl)
+    console.log('解码后的 cargoImageUrl:', cargoImageUrl)
+    
     this.setData({
       mode: query.mode || 'in',
-      vehicleImageUrl: decodeURIComponent(query.vehicleImageUrl || ''),
-      cargoImageUrl: decodeURIComponent(query.cargoImageUrl || ''),
+      terminalType: query.terminalType || '',
+      vehicleImageUrl: vehicleImageUrl,
+      cargoImageUrl: cargoImageUrl,
       plateNumber: query.plateNumber || '',
       vehicleType: query.vehicleType || '',
       driverName: '张三',
@@ -39,6 +53,13 @@ Page({
       detectionResults: cargoList,
       voiceText: ''
     });
+    
+    console.log('设置后的数据:', {
+      mode: this.data.mode,
+      vehicleImageUrl: this.data.vehicleImageUrl,
+      cargoImageUrl: this.data.cargoImageUrl
+    })
+    
     // 只在onLoad中绑定录音管理器事件
     this.recorderManager = wx.getRecorderManager();
     this.recorderManager.onStop(this.handleRecorderStop.bind(this));
@@ -161,10 +182,12 @@ Page({
       data: { text },
       success: res => {
         if (res.result && res.result.success) {
-          const { plateNumber, vehicleType, cargoList } = res.result.data;
+          const { plateNumber, vehicleType, cargoList, driverName, phoneNumber } = res.result.data;
           if (plateNumber) this.setData({ plateNumber });
           if (vehicleType) this.setData({ vehicleType });
           if (cargoList && cargoList.length > 0) this.setData({ cargoList });
+          if (driverName) this.setData({ driverName });
+          if (phoneNumber) this.setData({ phoneNumber });
           wx.showToast({ title: '已根据语音内容更新', icon: 'success' });
         } else {
           wx.showToast({ title: '未识别到有效信息', icon: 'none' });
@@ -178,7 +201,7 @@ Page({
   
   // 确认进场
   async onRegister() {
-    const { plateNumber, vehicleType, driverName, phoneNumber, cargoList, vehicleImageUrl, cargoImageUrl } = this.data
+    const { plateNumber, vehicleType, driverName, phoneNumber, cargoList, vehicleImageUrl, cargoImageUrl, mode, terminalType } = this.data
     
     if (!plateNumber || !vehicleType || !driverName || !phoneNumber) {
       wx.showToast({
@@ -187,18 +210,45 @@ Page({
       })
       return
     }
-    
+
+    // 仅进场登记时进行名单命中检查
+    try {
+      const whitelistEnabled = wx.getStorageSync('whitelistEnabled') || false
+      const blacklistEnabled = wx.getStorageSync('blacklistEnabled') || false
+      if (mode === 'in' && (whitelistEnabled || blacklistEnabled)) {
+        const check = await wx.cloud.callFunction({
+          name: 'plateLists',
+          data: { action: 'checkPlate', data: { plateNumber } }
+        })
+        const hit = check.result && check.result.success && check.result.data && check.result.data.hit
+        const hitType = hit ? check.result.data.type : ''
+        if (hit && ((hitType === 'black' && blacklistEnabled) || (hitType === 'white' && whitelistEnabled))) {
+          // 命中名单：跳转拦截提醒页，不写入记录
+          wx.navigateTo({
+            url: `/pages/intercept/intercept?plateNumber=${plateNumber}&type=${hitType}&vehicleType=${vehicleType}&terminalType=${terminalType}`
+          })
+          return
+        }
+      }
+    } catch (e) {
+      // 名单检查失败不阻断登记，只记录日志
+      console.warn('名单检查失败:', e)
+    }
+
     wx.showLoading({ title: '登记中...' })
     
     try {
       // 上传图片到云存储
       const [vehiclePhotoUrl, cargoPhotoUrl] = await Promise.all([
         this.uploadImage(vehicleImageUrl),
-        this.uploadImage(cargoImageUrl)
+        cargoImageUrl ? this.uploadImage(cargoImageUrl) : Promise.resolve('')
       ])
       
       // 生成序号
       const serialNumber = await this.generateSerialNumber()
+      
+      // 根据终端类型确定状态
+      const newStatus = terminalType === 'parking' ? 'parking' : 'disposal'
       
       // 创建记录数据
       const recordData = {
@@ -210,7 +260,7 @@ Page({
         phone_number: phoneNumber,
         cargo_list: cargoList,
         in_time: new Date().toISOString(),
-        status: 'in',
+        status: newStatus, // 使用新的状态
         duty_person: '值班员', // 可以从用户信息获取
         remark: '',
         in_photo_url: vehiclePhotoUrl,
@@ -253,7 +303,7 @@ Page({
   
   // 确认出场
   async onNext() {
-    const { plateNumber, vehicleType, cargoList, vehicleImageUrl, cargoImageUrl, outVehicleImageUrl } = this.data
+    const { plateNumber, vehicleType, cargoList, vehicleImageUrl, cargoImageUrl, terminalType } = this.data
     if (!plateNumber || !vehicleType) {
       wx.showToast({
         title: '请填写完整信息',
@@ -261,9 +311,9 @@ Page({
       })
       return
     }
-    // 直接跳转到 compare 页面，传递本地图片路径
+    // 直接跳转到 compare 页面，传递车辆照片路径作为出场照片
     wx.navigateTo({
-      url: `/pages/compare/compare?plateNumber=${plateNumber}&vehicleType=${vehicleType}&vehicleImageUrl=${encodeURIComponent(vehicleImageUrl)}&cargoImageUrl=${encodeURIComponent(cargoImageUrl)}&cargoList=${encodeURIComponent(JSON.stringify(cargoList))}&outVehicleImageUrl=${encodeURIComponent(outVehicleImageUrl)}`
+      url: `/pages/compare/compare?plateNumber=${plateNumber}&vehicleType=${vehicleType}&terminalType=${terminalType}&vehicleImageUrl=${encodeURIComponent(vehicleImageUrl)}&cargoImageUrl=${encodeURIComponent(cargoImageUrl)}&cargoList=${encodeURIComponent(JSON.stringify(cargoList))}&outVehicleImageUrl=${encodeURIComponent(vehicleImageUrl)}`
     })
   },
   
@@ -298,15 +348,5 @@ Page({
       console.error('生成序号失败:', error)
       return Date.now()
     }
-  },
-
-  chooseOutVehicleImage() {
-    wx.chooseImage({
-      count: 1,
-      sourceType: ['camera', 'album'],
-      success: res => {
-        this.setData({ outVehicleImageUrl: res.tempFilePaths[0] })
-      }
-    })
   }
 }) 

@@ -95,16 +95,30 @@ async function updateRecord(data) {
     out_time,
     status,
     out_photo_url,
-    remark
+    remark,
+    terminalType
   } = data
   
-  console.log('更新记录参数:', { plate_number, out_date, out_time, status })
+  console.log('更新记录参数:', { plate_number, out_date, out_time, status, terminalType })
   
-  // 查找同车牌号的最远一次进场记录（与 findLastInByPlate 保持一致，不添加时间限制）
+  // 根据终端类型确定要查找的状态
+  let statusToFind = ''
+  if (terminalType === 'disposal') {
+    statusToFind = 'disposal'  // 处置区终端查找处置区车辆
+  } else if (terminalType === 'parking') {
+    statusToFind = 'parking'   // 停车区终端查找停车区车辆
+  } else {
+    // 兼容旧逻辑，默认查找停车区车辆
+    statusToFind = 'parking'
+  }
+  
+  console.log('查找状态:', statusToFind)
+  
+  // 查找同车牌号的对应状态记录
   const record = await vehicleRecordsCollection
     .where({
       plate_number: plate_number,
-      status: 'in'
+      status: statusToFind
     })
     .orderBy('in_time', 'desc')
     .limit(1)
@@ -124,7 +138,7 @@ async function updateRecord(data) {
   if (record.data.length === 0) {
     return {
       success: false,
-      error: '未找到该车牌的进场记录'
+      error: `未找到该车牌在${statusToFind === 'disposal' ? '处置区' : '停车区'}的记录`
     }
   }
   
@@ -175,14 +189,24 @@ async function findRecord(data) {
 
 // 获取记录列表
 async function listRecords(data) {
-  const { page = 1, pageSize = 20, status } = data
+  const { page = 1, pageSize = 20, status, startDate, endDate } = data
   
   let query = vehicleRecordsCollection
   
+  // 构建查询条件
+  let whereCondition = {}
+  
   if (status) {
-    query = query.where({
-      status: status
-    })
+    whereCondition.status = status
+  }
+  
+  // 添加日期筛选条件
+  if (startDate && endDate) {
+    whereCondition.in_time = db.command.gte(startDate).and(db.command.lte(endDate))
+  }
+  
+  if (Object.keys(whereCondition).length > 0) {
+    query = query.where(whereCondition)
   }
   
   const result = await query
@@ -220,10 +244,19 @@ async function findRecordById(data) {
 
 // 新增：根据车牌号查找最近的进场记录
 async function findLastInByPlate(data) {
-  const { plate_number } = data
+  const { plate_number, terminalType } = data
   if (!plate_number) return { success: false, error: '缺少车牌号' }
+  let statusToFind = ''
+  if (terminalType === 'disposal') {
+    statusToFind = 'disposal'
+  } else if (terminalType === 'parking') {
+    statusToFind = 'parking'
+  } else {
+    // 默认兼容老逻辑
+    statusToFind = 'parking'
+  }
   const result = await vehicleRecordsCollection
-    .where({ plate_number, status: 'in' })
+    .where({ plate_number, status: statusToFind })
     .orderBy('in_time', 'desc')
     .limit(1)
     .get()

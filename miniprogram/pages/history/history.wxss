@@ -5,14 +5,113 @@
 }
 
 .header {
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 40rpx;
+  padding: 0 20rpx;
 }
 
 .title {
   font-size: 40rpx;
   font-weight: bold;
   color: #333;
+}
+
+.header-actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.filter-btn, .export-btn {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 12rpx 24rpx;
+  font-size: 26rpx;
+  min-width: 80rpx;
+  height: 60rpx;
+  line-height: 36rpx;
+}
+
+.filter-btn:active, .export-btn:active {
+  transform: scale(0.95);
+}
+
+.export-btn[disabled] {
+  background: #ccc;
+  color: #999;
+}
+
+.btn-text {
+  color: white;
+  font-size: 26rpx;
+}
+
+/* 日期筛选样式 */
+.date-filter {
+  background: white;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.08);
+}
+
+.filter-row {
+  display: flex;
+  gap: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.date-input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.date-label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.date-picker {
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  padding: 15rpx;
+  background: #f9f9f9;
+  text-align: center;
+  font-size: 26rpx;
+  color: #333;
+}
+
+.date-picker:active {
+  background: #f0f0f0;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
+}
+
+.apply-btn, .clear-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 15rpx 30rpx;
+  font-size: 26rpx;
+  min-width: 120rpx;
+}
+
+.clear-btn {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+.apply-btn:active, .clear-btn:active {
+  transform: scale(0.95);
 }
 
 .records-list {

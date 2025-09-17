@@ -44,11 +44,11 @@
   <view class="image-section">
     <view class="image-group">
       <view class="image-label">车辆正面</view>
-      <image src="{{vehicleImageUrl}}" mode="aspectFit" class="result-image" />
+      <image wx:if="{{vehicleImageUrl}}" src="{{vehicleImageUrl}}" mode="aspectFit" class="result-image" />
     </view>
     <view class="image-group">
       <view class="image-label">装载区域</view>
-      <image src="{{cargoImageUrl}}" mode="aspectFit" class="result-image" />
+      <image wx:if="{{cargoImageUrl}}" src="{{cargoImageUrl}}" mode="aspectFit" class="result-image" />
     </view>
     <view class="detection-results">
       <view class="results-title">识别到的物资：</view>

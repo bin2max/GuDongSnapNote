@@ -1,0 +1,10 @@
+<view class="container">
+  <view class="title">白/黑名单车辆拦截提醒</view>
+  <view class="row"><text class="label">车牌号：</text><text class="value">{{plateNumber}}</text></view>
+  <view class="row"><text class="label">名单类型：</text><text class="value">{{type === 'black' ? '黑名单' : '白名单'}}</text></view>
+  <view class="row"><text class="label">终端：</text><text class="value">{{terminalType === 'parking' ? '停车区' : '处置区'}}</text></view>
+  <view class="tips">已命中{{type === 'black' ? '黑名单' : '白名单'}}，请按制度进行处理。</view>
+  <view class="buttons">
+    <button bindtap="onBack">返回首页</button>
+  </view>
+</view> 

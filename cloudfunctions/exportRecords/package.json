@@ -1,0 +1,10 @@
+{
+  "name": "exportRecords",
+  "version": "1.0.0",
+  "description": "导出车辆记录为Excel文件",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "xlsx": "^0.18.5"
+  }
+} 

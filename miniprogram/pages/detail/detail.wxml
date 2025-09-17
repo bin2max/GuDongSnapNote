@@ -2,11 +2,9 @@
   <view>车牌号：{{record.plate_number}}</view>
   <view>车型：{{record.vehicle_type}}</view>
   <view>进门时间：{{record.in_time}}</view>
-  <view>进场照片URL：{{record.in_photo_url}}</view>
-  <image wx:if="{{record.in_photo_url}}" src="{{record.in_photo_url}}" mode="widthFix" class="preview" />
+  <image wx:if="{{record.in_photo_url && record.in_photo_url.length > 0}}" src="{{record.in_photo_url}}" mode="widthFix" class="preview" />
   <view>出门时间：{{record.out_time}}</view>
-  <view>出门照片URL：{{record.out_photo_url}}</view>
-  <image wx:if="{{record.out_photo_url}}" src="{{record.out_photo_url}}" mode="widthFix" class="preview" />
+  <image wx:if="{{record.out_photo_url && record.out_photo_url.length > 0}}" src="{{record.out_photo_url}}" mode="widthFix" class="preview" />
   <view>物资清单：</view>
   <view wx:for="{{record.cargo_list}}" wx:key="index">
     {{item.name || item.Name || '未知物资'}} × {{item.count || 1}}

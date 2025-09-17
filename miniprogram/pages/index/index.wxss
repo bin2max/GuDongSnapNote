@@ -20,6 +20,75 @@
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.3);
 }
 
+/* 终端选择器样式 */
+.terminal-selector {
+  background: rgba(255,255,255,0.15);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 40rpx;
+  backdrop-filter: blur(10rpx);
+  border: 1rpx solid rgba(255,255,255,0.2);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.selector-title {
+  display: block;
+  font-size: 28rpx;
+  color: white;
+  text-align: center;
+  margin-bottom: 20rpx;
+  font-weight: bold;
+}
+
+.terminal-buttons {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 15rpx;
+}
+
+.terminal-btn {
+  flex: 1;
+  height: 80rpx;
+  background: rgba(255,255,255,0.2);
+  border: 2rpx solid rgba(255,255,255,0.3);
+  border-radius: 15rpx;
+  color: white;
+  font-size: 28rpx;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.terminal-btn.active {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border-color: #FFD700;
+  color: #333;
+  box-shadow: 0 4rpx 15rpx rgba(255, 215, 0, 0.3);
+}
+
+.terminal-btn:active {
+  transform: scale(0.95);
+}
+
+.current-terminal {
+  display: block;
+  font-size: 24rpx;
+  color: #FFD700;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* 禁用状态样式 */
+.btn-primary[disabled], .btn-secondary[disabled] {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  box-shadow: none;
+}
+
+.btn-primary[disabled]:active, .btn-secondary[disabled]:active {
+  transform: none;
+}
+
 .main-buttons {
   width: 100%;
   margin-bottom: 60rpx;
